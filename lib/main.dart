@@ -1,4 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import 'core/theme/app_theme.dart';
+import 'features/auth/ui/login_screen.dart';
+import 'features/auth/ui/terms_screen.dart';
 
 void main() {
   runApp(const MyApp());
