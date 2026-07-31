@@ -29,13 +29,13 @@ flutter:
   fonts:
     - family: DM Sans
       fonts:
-        - asset: assets/fonts/DMSans-Regular.ttf
+        - asset: assets/fonts/DMSans_24pt-Regular.ttf
           weight: 400
-        - asset: assets/fonts/DMSans-Medium.ttf
+        - asset: assets/fonts/DMSans_24pt-Medium.ttf
           weight: 500
-        - asset: assets/fonts/DMSans-SemiBold.ttf
+        - asset: assets/fonts/DMSans_24pt-SemiBold.ttf
           weight: 600
-        - asset: assets/fonts/DMSans-Bold.ttf
+        - asset: assets/fonts/DMSans_36pt-Bold.ttf
           weight: 700
     - family: DM Mono
       fonts:
