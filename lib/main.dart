@@ -6,21 +6,25 @@ import 'features/auth/ui/login_screen.dart';
 import 'features/auth/ui/terms_screen.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(const ProviderScope(child: EazyAttendanceApp()));
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+class EazyAttendanceApp extends StatelessWidget {
+  const EazyAttendanceApp({super.key});
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
-      theme: ThemeData(
-        colorScheme: .fromSeed(seedColor: Colors.deepPurple),
-      ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      title: 'Eazy Attendance',
+      debugShowCheckedModeBanner: false,
+      theme: AppTheme.light,
+      // Auth is Phase 1. Later phases add '/dashboard', '/attendance',
+      // '/settings' and put an auto-login gate on the initial route.
+      initialRoute: '/',
+      routes: {
+        '/': (_) => const LoginScreen(),
+        '/terms': (_) => const TermsScreen(),
+      },
     );
   }
 }
