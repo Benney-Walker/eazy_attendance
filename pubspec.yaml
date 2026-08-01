@@ -1,8 +1,6 @@
 name: eazy_attendance
-description: "Eazy Attendance — native Android app for Bynex Labs school management system."
-
+description: "Eazy Attendance — native Android app for Bynex Labs school attendance."
 publish_to: 'none'
-
 version: 1.0.0+1
 
 environment:
@@ -14,22 +12,45 @@ dependencies:
 
   cupertino_icons: ^1.0.8
 
+  # State management (project standard: Riverpod only).
   flutter_riverpod: ^2.6.1
 
+  # Networking — single reusable Dio client (Phase 2).
   dio: ^5.7.0
 
+  # Encrypted token storage — JWT lives in the platform keystore (Phase 2).
   flutter_secure_storage: ^9.2.2
+
+  # Local-first persistence (Phase 3) — Drift over SQLite.
+  drift: ^2.20.0
+  sqlite3_flutter_libs: ^0.5.24
+  path_provider: ^2.1.4
+  path: ^1.9.0
+
+  # Connectivity detection for automatic offline/online switching (Phase 3
+  # exposes the watcher; Phase 6 drives sync from it).
+  connectivity_plus: ^6.1.0
+
+  # ---------------------------------------------------------------------------
+  # Remaining phases stay minimal; nothing further to declare yet.
+  # ---------------------------------------------------------------------------
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-
   flutter_lints: ^6.0.0
 
-flutter:
+  # Drift code generation (Phase 3). Run after `flutter pub get`:
+  #   dart run build_runner build --delete-conflicting-outputs
+  drift_dev: ^2.20.0
+  build_runner: ^2.4.13
 
+flutter:
   uses-material-design: true
 
+  # Fonts are BUNDLED (not fetched at runtime) so typography renders correctly
+  # instantly and fully offline — essential for an offline-first app.
+  # Add the six .ttf files listed in README under assets/fonts/ before running.
   fonts:
     - family: DM Sans
       fonts:
