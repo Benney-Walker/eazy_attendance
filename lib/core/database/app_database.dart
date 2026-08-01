@@ -59,9 +59,18 @@ class SyncQueue extends Table {
   DateTimeColumn get updatedAt => dateTime()();
 }
 
+class Preferences extends Table {
+  TextColumn get key => text()();
+  TextColumn get value => text()();
+
+  @override
+  Set<Column> get primaryKey => {key};
+}
+
 // ─── Database ───────────────────────────────────────────────────────────────
 
-@DriftDatabase(tables: [Levels, Students, AttendanceRecords, SyncQueue])
+@DriftDatabase(
+    tables: [Levels, Students, AttendanceRecords, SyncQueue, Preferences])
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
@@ -70,6 +79,20 @@ class AppDatabase extends _$AppDatabase {
 
   @override
   int get schemaVersion => 1;
+
+  // ── Preferences (key-value UI state) ──
+
+  Future<String?> getPref(String key) async {
+    final row = await (select(preferences)..where((p) => p.key.equals(key)))
+        .getSingleOrNull();
+    return row?.value;
+  }
+
+  Future<void> setPref(String key, String value) {
+    return into(preferences).insertOnConflictUpdate(
+      PreferencesCompanion.insert(key: key, value: value),
+    );
+  }
 
   // ── Levels ──
 
