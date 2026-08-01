@@ -38,3 +38,18 @@ String navDate(DateTime date) {
   final mo = _months[date.month - 1];
   return '$wd, ${date.day} $mo';
 }
+
+/// Long human-readable date including the year, e.g. "Thu, 10 Apr 2026" —
+/// matches the website's `formatDateLong` used on the attendance screen.
+String formatDateLong(String iso) {
+  final date = parseIsoDate(iso);
+  final wd = _weekdays[date.weekday - 1];
+  final mo = _months[date.month - 1];
+  return '$wd, ${date.day} $mo ${date.year}';
+}
+
+String initialsOf(String name) {
+  final parts = name.trim().split(RegExp(r'\s+')).where((p) => p.isNotEmpty);
+  final letters = parts.take(2).map((w) => w[0]).join();
+  return letters.toUpperCase();
+}
