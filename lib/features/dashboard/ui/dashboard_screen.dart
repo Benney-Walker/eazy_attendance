@@ -13,9 +13,6 @@ import '../../auth/application/auth_controller.dart';
 import '../application/dashboard_controller.dart';
 import '../data/level_models.dart';
 
-/// The dashboard — native port of the website's DashboardPage. Staff pick a
-/// class and date, then load the roster. Classes load local-first (instant from
-/// cache, refreshed when online), so the screen is usable offline.
 class DashboardScreen extends ConsumerStatefulWidget {
   const DashboardScreen({super.key});
 
@@ -72,19 +69,25 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     }
   }
 
-  Future<void> _loadStudents(String levelId, String date) async {
+  Future<void> _loadStudents(String levelId, String date, String className) async {
+    // The AttendanceScreen loads the roster itself (local-first). We still do a
+    // quick pre-check here so a totally empty offline state surfaces on the
+    // dashboard rather than pushing an empty screen.
     setState(() => _loadingStudents = true);
     try {
       final result =
       await ref.read(loadStudentsControllerProvider).load(levelId, date);
       if (!mounted) return;
+      if (result.students.isEmpty) {
+        _showError('No students found for this class.');
+        return;
+      }
       Navigator.of(context).push(
         MaterialPageRoute(
           builder: (_) => AttendanceScreen(
             levelId: levelId,
             date: date,
-            students: result.students,
-            loadedFromCache: result.fromCache,
+            className: className,
           ),
         ),
       );
@@ -169,7 +172,14 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
               ref.read(dashboardControllerProvider.notifier).selectClass(id),
           onPickDate: () => _pickDate(state.date),
           onLoadStudents: state.hasSelection
-              ? () => _loadStudents(state.selectedClassId!, state.date)
+              ? () {
+            final selected = state.classes.firstWhere(
+                  (c) => c.id == state.selectedClassId,
+              orElse: () => const LevelModel(id: '', name: ''),
+            );
+            _loadStudents(
+                state.selectedClassId!, state.date, selected.name);
+          }
               : null,
         ),
       ),
