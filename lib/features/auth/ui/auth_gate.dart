@@ -4,12 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/theme/app_colors.dart';
 import '../application/auth_controller.dart';
 import 'login_screen.dart';
-import '../../dashboard/ui/dashboard_screen.dart';
+import '../../../core/shell/home_shell.dart';
 
-/// The app's initial route. On launch it reads the stored session (via the
-/// [AuthController] `build`) and shows either the signed-in home or the login
-/// screen — this is the auto-login behaviour. While the session is being
-/// restored it shows a brief branded splash.
 class AuthGate extends ConsumerWidget {
   const AuthGate({super.key});
 
@@ -23,7 +19,7 @@ class AuthGate extends ConsumerWidget {
       data: (state) {
         switch (state.status) {
           case AuthStatus.authenticated:
-            return const DashboardScreen();
+            return const HomeShell();
           case AuthStatus.unauthenticated:
           case AuthStatus.unknown:
             return const LoginScreen();
