@@ -2,12 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/network/api_exception.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/app_password_field.dart';
 import '../../../core/widgets/app_text_field.dart';
 import '../../../core/widgets/loading_button.dart';
+import '../application/auth_controller.dart';
 
 /// Login screen — the native Android counterpart of the website's login page.
 ///
@@ -54,21 +56,27 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
     setState(() => _loading = true);
 
-    // ─────────────────────────────────────────────────────────────────────
-    // TODO(Phase 2): call the auth backend via ApiService + AuthController:
-    //   POST ApiConfig.staffLogin { staffId, password }
-    //     → save { authToken, staffName, staffId } to secure storage
-    //     → navigate to DashboardScreen
-    //   Map 401 → data.body, 500 → data.message, else generic error.
-    // For now, briefly simulate the request so the spinner is visible.
-    // ─────────────────────────────────────────────────────────────────────
-    await Future<void>.delayed(const Duration(milliseconds: 600));
-    if (!mounted) return;
-
-    setState(() {
-      _loading = false;
-      _error = 'Backend sign-in is wired up in Phase 2.';
-    });
+    // Real login. On success the AuthController flips global auth state and the
+    // AuthGate swaps this screen for the signed-in home automatically — so
+    // there's no manual navigation here. On failure we show the mapped message.
+    try {
+      await ref
+          .read(authControllerProvider.notifier)
+          .login(staffId: staffId, password: password);
+      // Success: no-op. The gate rebuilds and replaces this screen.
+    } on ApiException catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _loading = false;
+        _error = e.message;
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        _loading = false;
+        _error = 'An unexpected error occurred.';
+      });
+    }
   }
 
   @override
