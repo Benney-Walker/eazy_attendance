@@ -7,7 +7,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/date_utils.dart';
-import '../../authentication/application/auth_controller.dart';
+import '../../auth/application/auth_controller.dart';
 
 /// The signed-in staff's ID (read from secure storage; not held in AuthState).
 final _staffIdProvider = FutureProvider<String?>((ref) {
