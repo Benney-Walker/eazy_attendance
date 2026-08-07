@@ -10,7 +10,7 @@ import '../../../core/utils/date_utils.dart';
 import '../../../core/widgets/loading_button.dart';
 import '../../attendance/application/load_students_controller.dart';
 import '../../attendance/ui/attendance_screen.dart';
-import '../../authentication/application/auth_controller.dart';
+import '../../auth/application/auth_controller.dart';
 import '../application/dashboard_controller.dart';
 import '../data/level_models.dart';
 
