@@ -1,0 +1,62 @@
+[33m5fd662f[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmaster[m[33m)[m Merge previous repository history
+[33md75bbfd[m Continue Flutter development
+[33m5f69857[m[33m ([m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m Updated date utils
+[33m1776d3b[m Updated dashboard screen
+[33me4b10e8[m Code cleaning
+[33m4817725[m Completed attendance screen
+[33ma281ee6[m Added settings screen
+[33ma78c6b4[m packaged dashboard in a shell
+[33m1fec2b4[m Added attendance controller
+[33mb1ad949[m Updated date util
+[33mf1263d7[m Updated data providers
+[33m0a28dcf[m Added attendance screen
+[33m5fbcdc3[m Added attendance data providers
+[33m7d6d337[m Added dashboard controller
+[33m3113d31[m Fixed new dashboard screen routing
+[33md309998[m Fixed Added load students controller
+[33m3c7b963[m Fixed actual login pipeline
+[33m988f494[m Added actual dashboard screen
+[33m255f7e6[m project file
+[33m1806412[m Updated app data base
+[33mda92ece[m updated main to start from auth gate
+[33m88c1bf2[m Added student repo
+[33m1034fdb[m Added status provider
+[33m8c843dd[m Added data providers
+[33m0bf75bf[m Added level repo
+[33m8aba4de[m Added level models
+[33m0521f5a[m Added util class for date
+[33mc9fbc95[m project files
+[33m4102374[m Added core providers
+[33mb02899a[m Added connectivity service
+[33ma327ee0[m Added attendance repo
+[33m44eb325[m Added local database for offline usage
+[33m7c30b3f[m Added auth gate
+[33m3c367f7[m Added place holder home screen
+[33mb85627b[m Added auth controller
+[33m0894917[m Added auth repository
+[33m317e9f5[m Combine auth dtos into one file
+[33m1e936a5[m Added api service
+[33m5f5e3f3[m Added custom exceptions to catch api response
+[33mb255671[m updated secure storage for auth
+[33m6fbada1[m added secure storage for auth
+[33m9f6ca45[m Added auth dtos
+[33mb21a79b[m project files
+[33m752a776[m main function update
+[33m96f267e[m cleared dead code
+[33m15215bc[m Fixed import
+[33ma2dfb1e[m project file
+[33m9a005d3[m Fixed main method name
+[33maffb9fa[m Added font types for bundling
+[33m94da87a[m Project files
+[33mf5edf44[m temporary terms page
+[33m54d93ff[m Added login screen
+[33m3390a7d[m Added loading button widget
+[33m40d8354[m Added text field widget
+[33m9a68c00[m Added password field widget
+[33m54c9650[m Added app theme
+[33mce0f99f[m Added app text styles
+[33m491c647[m Added app colors
+[33mfe478a7[m Added api configurations
+[33m8e79931[m Added dependencies
+[33m9a0510b[m Init commit
+[33mff12451[m Initial commit
