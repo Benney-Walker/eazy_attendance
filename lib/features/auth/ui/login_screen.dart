@@ -11,11 +11,6 @@ import '../../../core/widgets/app_text_field.dart';
 import '../../../core/widgets/loading_button.dart';
 import '../application/auth_controller.dart';
 
-/// Login screen — the native Android counterpart of the website's login page.
-///
-/// Phase 1 scope: full UI + client-side validation only. The real
-/// `POST /auth/v1/staff-login` call, secure token storage, and navigation to
-/// the dashboard are wired in Phase 2 (see the marked TODO).
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
 
@@ -30,6 +25,20 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
   String? _error;
   bool _loading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    // Pre-fill the last-used staffId (only the staffId is remembered, never the
+    // password). If found, move focus to the password field for convenience.
+    Future.microtask(() async {
+      final remembered =
+          await ref.read(authControllerProvider.notifier).rememberedStaffId();
+      if (!mounted || remembered == null || remembered.isEmpty) return;
+      setState(() => _staffIdController.text = remembered);
+      _passwordFocus.requestFocus();
+    });
+  }
 
   @override
   void dispose() {
@@ -92,7 +101,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 padding: const EdgeInsets.fromLTRB(20, 40, 20, 40),
                 child: ConstrainedBox(
                   constraints:
-                  BoxConstraints(minHeight: constraints.maxHeight - 80),
+                      BoxConstraints(minHeight: constraints.maxHeight - 80),
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [

@@ -67,6 +67,10 @@ class AuthRepository {
 
   Future<String?> currentStaffName() => _storage.readStaffName();
 
+  /// The remembered staffId for pre-filling the login form (persists across
+  /// logout). Only the staffId is stored — never the password.
+  Future<String?> rememberedStaffId() => _storage.readRememberedStaffId();
+
   // ── helpers ──
 
   ApiException _mapDioException(DioException e) {
