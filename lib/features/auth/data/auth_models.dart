@@ -1,5 +1,3 @@
-/// Request body for `POST /auth/v1/staff-login` — keys must match the backend
-/// exactly: `{ staffId, password }` (see the website's LoginPage).
 class LoginRequest {
   const LoginRequest({required this.staffId, required this.password});
 
@@ -12,25 +10,34 @@ class LoginRequest {
   };
 }
 
-/// Successful login response. The backend returns `authToken`, `staffName`,
-/// and `staffId` (see the website's `saveAuth(data.authToken, data.staffName,
-/// data.staffId)`).
 class LoginResponse {
   const LoginResponse({
     required this.authToken,
+    required this.refreshToken,
     required this.staffName,
     required this.staffId,
+    this.institutionName = '',
+    this.roles = const [],
   });
 
   final String authToken;
+  final String refreshToken;
   final String staffName;
   final String staffId;
+  final String institutionName;
+  final List<String> roles;
 
   factory LoginResponse.fromJson(Map<String, dynamic> json) {
+    final rawRoles = json['roles'];
     return LoginResponse(
       authToken: (json['authToken'] ?? '').toString(),
+      refreshToken: (json['refreshToken'] ?? '').toString(),
       staffName: (json['staffName'] ?? '').toString(),
       staffId: (json['staffId'] ?? '').toString(),
+      institutionName: (json['institutionName'] ?? '').toString(),
+      roles: rawRoles is List
+          ? rawRoles.map((e) => e.toString()).toList()
+          : const [],
     );
   }
 }

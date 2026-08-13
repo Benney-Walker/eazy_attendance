@@ -43,8 +43,10 @@ class AuthRepository {
       }
       await _storage.saveAuth(
         token: parsed.authToken,
+        refreshToken: parsed.refreshToken,
         staffName: parsed.staffName,
         staffId: parsed.staffId,
+        institutionName: parsed.institutionName,
       );
       return parsed.staffName;
     }
@@ -70,6 +72,9 @@ class AuthRepository {
   /// The remembered staffId for pre-filling the login form (persists across
   /// logout). Only the staffId is stored — never the password.
   Future<String?> rememberedStaffId() => _storage.readRememberedStaffId();
+
+  /// The institution name captured at login (or null).
+  Future<String?> institutionName() => _storage.readInstitutionName();
 
   // ── helpers ──
 

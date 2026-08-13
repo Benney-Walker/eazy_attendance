@@ -11,11 +11,13 @@ class AuthGate extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // On any transition to unauthenticated, pop everything back to this gate so
-    // the login screen isn't hidden under a pushed route.
+    // On any transition to unauthenticated (e.g. refresh token expired), pop
+    // everything back to this gate so the login screen isn't hidden under a
+    // pushed route like the attendance screen.
     ref.listen<AsyncValue<AuthState>>(authControllerProvider, (prev, next) {
       final wasAuthed = prev?.valueOrNull?.status == AuthStatus.authenticated;
-      final nowUnauthed = next.valueOrNull?.status == AuthStatus.unauthenticated;
+      final nowUnauthed =
+          next.valueOrNull?.status == AuthStatus.unauthenticated;
       if (wasAuthed && nowUnauthed) {
         final navigator = Navigator.of(context);
         if (navigator.canPop()) {

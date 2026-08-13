@@ -12,48 +12,57 @@ class SecureStorageService {
   final FlutterSecureStorage _storage;
 
   static const _kToken = 'auth_token';
+  static const _kRefreshToken = 'refresh_token';
   static const _kStaffName = 'staff_name';
   static const _kStaffId = 'staff_id';
+  static const _kInstitution = 'institution_name';
 
-  /// The last staffId used to sign in. Unlike the session keys above, this
-  /// deliberately SURVIVES logout / 401 so the login screen can pre-fill it for
-  /// convenience. Only the staffId is remembered — never the password.
   static const _kRememberedStaffId = 'remembered_staff_id';
 
-  /// Persist the three auth values written on a successful login.
+  /// Persist the values written on a successful login.
   Future<void> saveAuth({
     required String token,
+    required String refreshToken,
     required String staffName,
     required String staffId,
+    String institutionName = '',
   }) async {
     await Future.wait([
       _storage.write(key: _kToken, value: token),
+      _storage.write(key: _kRefreshToken, value: refreshToken),
       _storage.write(key: _kStaffName, value: staffName),
       _storage.write(key: _kStaffId, value: staffId),
+      _storage.write(key: _kInstitution, value: institutionName),
       // Remember the staffId for next time (persists across logout).
       _storage.write(key: _kRememberedStaffId, value: staffId),
     ]);
   }
 
+  /// Replace just the access token after a successful refresh (the refresh
+  /// token and everything else are untouched).
+  Future<void> updateAccessToken(String token) =>
+      _storage.write(key: _kToken, value: token);
+
   Future<String?> readToken() => _storage.read(key: _kToken);
+
+  Future<String?> readRefreshToken() => _storage.read(key: _kRefreshToken);
 
   Future<String?> readStaffName() => _storage.read(key: _kStaffName);
 
   Future<String?> readStaffId() => _storage.read(key: _kStaffId);
 
+  Future<String?> readInstitutionName() => _storage.read(key: _kInstitution);
+
   /// The remembered staffId for pre-filling the login form (or null).
   Future<String?> readRememberedStaffId() =>
       _storage.read(key: _kRememberedStaffId);
 
-  /// True when a JWT is present — used by the auto-login gate.
+  /// True when an access token is present — used by the auto-login gate.
   Future<bool> hasSession() async {
     final token = await readToken();
     return token != null && token.isNotEmpty;
   }
 
-  /// Clear the SESSION (logout / 401), but keep the remembered staffId so the
-  /// login screen can pre-fill it. Reads the remembered value, wipes storage,
-  /// then restores just that one key.
   Future<void> clear() async {
     final remembered = await readRememberedStaffId();
     await _storage.deleteAll();
@@ -62,7 +71,6 @@ class SecureStorageService {
     }
   }
 
-  /// Fully forget everything including the remembered staffId (not used by the
-  /// normal logout flow; provided for completeness / a "forget me" action).
+  /// Fully forget everything including the remembered staffId.
   Future<void> clearAll() => _storage.deleteAll();
 }
