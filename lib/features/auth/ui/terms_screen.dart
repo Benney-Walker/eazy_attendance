@@ -51,7 +51,7 @@ class TermsScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 24),
                     LoadingButton(
-                      label: 'Back to Login',
+                      label: 'Go Back',
                       expand: false,
                       onPressed: () => Navigator.of(context).maybePop(),
                     ),

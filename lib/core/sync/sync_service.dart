@@ -137,10 +137,6 @@ class SyncService {
         data: body,
         options: Options(
           headers: {
-            // staffId + Authorization are also added by the interceptor, but we
-            // set them explicitly from the job so the request is self-contained
-            // and replay-accurate regardless of the current session.
-            'staffId': job.staffId,
             'selectedDate': job.date,
             'levelId': job.levelId,
           },

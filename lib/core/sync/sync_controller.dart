@@ -53,17 +53,6 @@ class SyncState {
   }
 }
 
-/// Coordinates automatic syncing and surfaces status to the UI.
-///
-/// Triggers a drain when:
-///   • connectivity transitions to online (watches [networkStatusProvider]),
-///   • a save is enqueued (call [syncNow] from the save path),
-///   • the app resumes / launches (call [onResume]).
-///
-/// Note: this is in-app automatic sync — it runs whenever the app is open and
-/// online. It does not sync while the app is fully closed (that would require
-/// OS-level background execution). For the teacher's workflow — mark now, it
-/// uploads as soon as there's signal while using the app — this is sufficient.
 class SyncController extends Notifier<SyncState> {
   Timer? _debounce;
 
@@ -98,9 +87,6 @@ class SyncController extends Notifier<SyncState> {
     syncNow();
   }
 
-  /// Debounced drain. Call after enqueuing a save, or any time a sync attempt
-  /// is warranted. Coalesces bursts (e.g. several quick saves) into one pass.
-  /// Fire-and-forget: callers don't need to await the network round-trip.
   void syncNow() {
     _debounce?.cancel();
     _debounce = Timer(const Duration(milliseconds: 400), _drain);

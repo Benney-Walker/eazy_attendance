@@ -33,12 +33,6 @@ class AttendanceRepository {
     };
   }
 
-  /// Save attendance locally and enqueue it for sync.
-  ///
-  /// Writes one AttendanceRecords row per student and one SyncQueue job for the
-  /// (level, date). The job's `payloadJson` is the exact body the backend
-  /// expects — a JSON array of `{studentId, status}` — captured now so it can
-  /// be replayed unchanged even after an app restart.
   Future<void> saveAttendance({
     required String staffId,
     required String levelId,
