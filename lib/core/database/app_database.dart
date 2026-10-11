@@ -29,10 +29,6 @@ class Students extends Table {
   Set<Column> get primaryKey => {studentId, levelId};
 }
 
-/// The LOCAL SOURCE OF TRUTH for marks. The attendance screen reads and writes
-/// here; a row exists per (level, date, student). `status` holds the wire
-/// string ("PRESENT"/"ABSENT"). `synced` flips true once the owning sync job
-/// succeeds.
 class AttendanceRecords extends Table {
   TextColumn get levelId => text()();
   TextColumn get date => text()(); // yyyy-MM-dd, as the backend expects
@@ -45,17 +41,8 @@ class AttendanceRecords extends Table {
   Set<Column> get primaryKey => {levelId, date, studentId};
 }
 
-/// Pending attendance submissions to replay against `POST /student/v2/
-/// mark-attendance`. One row per (level, date) — a newer save for the same
-/// class/date supersedes an unsynced earlier one (last-write-wins), because
-/// the backend treats a submission as a full replace for that class/date.
-///
-/// `payloadJson` is the exact body to send: a JSON array of
-/// `{studentId, status}`. `staffId` is captured so the job can be replayed
-/// even if it outlives the current in-memory session.
 class SyncQueue extends Table {
   IntColumn get id => integer().autoIncrement()();
-  TextColumn get staffId => text()();
   TextColumn get levelId => text()();
   TextColumn get date => text()();
   TextColumn get payloadJson => text()();
@@ -67,9 +54,6 @@ class SyncQueue extends Table {
   DateTimeColumn get updatedAt => dateTime()();
 }
 
-/// Small key-value store for non-sensitive UI state (e.g. the last selected
-/// class and date), so reopening the dashboard restores the prior selection.
-/// Sensitive data (tokens) never goes here — that stays in secure storage.
 class Preferences extends Table {
   TextColumn get key => text()();
   TextColumn get value => text()();
