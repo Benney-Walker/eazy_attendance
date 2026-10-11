@@ -1,13 +1,11 @@
 class ApiConfig {
   ApiConfig._();
 
-  static const bool useLocal = false;
-
   static const String LOCAL_URL = 'http://localhost:8080';
 
-  static const String PRODUCTION_URL = 'https://schoolmanagementsystem-production-46c3.up.railway.app';
+  static const String PRODUCTION_URL = 'https://schoolmanagement.api.bynexlabs.com';
 
-  static String get baseApi => '${useLocal ? LOCAL_URL : PRODUCTION_URL}/api';
+  static String get baseApi => '${PRODUCTION_URL}/api';
 
   static const String staffLogin = '/auth/v1/staff-login';
 
