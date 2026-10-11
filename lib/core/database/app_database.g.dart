@@ -919,17 +919,6 @@ class $SyncQueueTable extends SyncQueue
       'PRIMARY KEY AUTOINCREMENT',
     ),
   );
-  static const VerificationMeta _staffIdMeta = const VerificationMeta(
-    'staffId',
-  );
-  @override
-  late final GeneratedColumn<String> staffId = GeneratedColumn<String>(
-    'staff_id',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: true,
-  );
   static const VerificationMeta _levelIdMeta = const VerificationMeta(
     'levelId',
   );
@@ -1019,7 +1008,6 @@ class $SyncQueueTable extends SyncQueue
   @override
   List<GeneratedColumn> get $columns => [
     id,
-    staffId,
     levelId,
     date,
     payloadJson,
@@ -1043,14 +1031,6 @@ class $SyncQueueTable extends SyncQueue
     final data = instance.toColumns(true);
     if (data.containsKey('id')) {
       context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
-    }
-    if (data.containsKey('staff_id')) {
-      context.handle(
-        _staffIdMeta,
-        staffId.isAcceptableOrUnknown(data['staff_id']!, _staffIdMeta),
-      );
-    } else if (isInserting) {
-      context.missing(_staffIdMeta);
     }
     if (data.containsKey('level_id')) {
       context.handle(
@@ -1129,10 +1109,6 @@ class $SyncQueueTable extends SyncQueue
         DriftSqlType.int,
         data['${effectivePrefix}id'],
       )!,
-      staffId: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}staff_id'],
-      )!,
       levelId: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}level_id'],
@@ -1176,7 +1152,6 @@ class $SyncQueueTable extends SyncQueue
 
 class SyncQueueData extends DataClass implements Insertable<SyncQueueData> {
   final int id;
-  final String staffId;
   final String levelId;
   final String date;
   final String payloadJson;
@@ -1187,7 +1162,6 @@ class SyncQueueData extends DataClass implements Insertable<SyncQueueData> {
   final DateTime updatedAt;
   const SyncQueueData({
     required this.id,
-    required this.staffId,
     required this.levelId,
     required this.date,
     required this.payloadJson,
@@ -1201,7 +1175,6 @@ class SyncQueueData extends DataClass implements Insertable<SyncQueueData> {
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     map['id'] = Variable<int>(id);
-    map['staff_id'] = Variable<String>(staffId);
     map['level_id'] = Variable<String>(levelId);
     map['date'] = Variable<String>(date);
     map['payload_json'] = Variable<String>(payloadJson);
@@ -1218,7 +1191,6 @@ class SyncQueueData extends DataClass implements Insertable<SyncQueueData> {
   SyncQueueCompanion toCompanion(bool nullToAbsent) {
     return SyncQueueCompanion(
       id: Value(id),
-      staffId: Value(staffId),
       levelId: Value(levelId),
       date: Value(date),
       payloadJson: Value(payloadJson),
@@ -1239,7 +1211,6 @@ class SyncQueueData extends DataClass implements Insertable<SyncQueueData> {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return SyncQueueData(
       id: serializer.fromJson<int>(json['id']),
-      staffId: serializer.fromJson<String>(json['staffId']),
       levelId: serializer.fromJson<String>(json['levelId']),
       date: serializer.fromJson<String>(json['date']),
       payloadJson: serializer.fromJson<String>(json['payloadJson']),
@@ -1255,7 +1226,6 @@ class SyncQueueData extends DataClass implements Insertable<SyncQueueData> {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'id': serializer.toJson<int>(id),
-      'staffId': serializer.toJson<String>(staffId),
       'levelId': serializer.toJson<String>(levelId),
       'date': serializer.toJson<String>(date),
       'payloadJson': serializer.toJson<String>(payloadJson),
@@ -1269,7 +1239,6 @@ class SyncQueueData extends DataClass implements Insertable<SyncQueueData> {
 
   SyncQueueData copyWith({
     int? id,
-    String? staffId,
     String? levelId,
     String? date,
     String? payloadJson,
@@ -1280,7 +1249,6 @@ class SyncQueueData extends DataClass implements Insertable<SyncQueueData> {
     DateTime? updatedAt,
   }) => SyncQueueData(
     id: id ?? this.id,
-    staffId: staffId ?? this.staffId,
     levelId: levelId ?? this.levelId,
     date: date ?? this.date,
     payloadJson: payloadJson ?? this.payloadJson,
@@ -1293,7 +1261,6 @@ class SyncQueueData extends DataClass implements Insertable<SyncQueueData> {
   SyncQueueData copyWithCompanion(SyncQueueCompanion data) {
     return SyncQueueData(
       id: data.id.present ? data.id.value : this.id,
-      staffId: data.staffId.present ? data.staffId.value : this.staffId,
       levelId: data.levelId.present ? data.levelId.value : this.levelId,
       date: data.date.present ? data.date.value : this.date,
       payloadJson: data.payloadJson.present
@@ -1313,7 +1280,6 @@ class SyncQueueData extends DataClass implements Insertable<SyncQueueData> {
   String toString() {
     return (StringBuffer('SyncQueueData(')
           ..write('id: $id, ')
-          ..write('staffId: $staffId, ')
           ..write('levelId: $levelId, ')
           ..write('date: $date, ')
           ..write('payloadJson: $payloadJson, ')
@@ -1329,7 +1295,6 @@ class SyncQueueData extends DataClass implements Insertable<SyncQueueData> {
   @override
   int get hashCode => Object.hash(
     id,
-    staffId,
     levelId,
     date,
     payloadJson,
@@ -1344,7 +1309,6 @@ class SyncQueueData extends DataClass implements Insertable<SyncQueueData> {
       identical(this, other) ||
       (other is SyncQueueData &&
           other.id == this.id &&
-          other.staffId == this.staffId &&
           other.levelId == this.levelId &&
           other.date == this.date &&
           other.payloadJson == this.payloadJson &&
@@ -1357,7 +1321,6 @@ class SyncQueueData extends DataClass implements Insertable<SyncQueueData> {
 
 class SyncQueueCompanion extends UpdateCompanion<SyncQueueData> {
   final Value<int> id;
-  final Value<String> staffId;
   final Value<String> levelId;
   final Value<String> date;
   final Value<String> payloadJson;
@@ -1368,7 +1331,6 @@ class SyncQueueCompanion extends UpdateCompanion<SyncQueueData> {
   final Value<DateTime> updatedAt;
   const SyncQueueCompanion({
     this.id = const Value.absent(),
-    this.staffId = const Value.absent(),
     this.levelId = const Value.absent(),
     this.date = const Value.absent(),
     this.payloadJson = const Value.absent(),
@@ -1380,7 +1342,6 @@ class SyncQueueCompanion extends UpdateCompanion<SyncQueueData> {
   });
   SyncQueueCompanion.insert({
     this.id = const Value.absent(),
-    required String staffId,
     required String levelId,
     required String date,
     required String payloadJson,
@@ -1389,15 +1350,13 @@ class SyncQueueCompanion extends UpdateCompanion<SyncQueueData> {
     this.lastError = const Value.absent(),
     required DateTime createdAt,
     required DateTime updatedAt,
-  }) : staffId = Value(staffId),
-       levelId = Value(levelId),
+  }) : levelId = Value(levelId),
        date = Value(date),
        payloadJson = Value(payloadJson),
        createdAt = Value(createdAt),
        updatedAt = Value(updatedAt);
   static Insertable<SyncQueueData> custom({
     Expression<int>? id,
-    Expression<String>? staffId,
     Expression<String>? levelId,
     Expression<String>? date,
     Expression<String>? payloadJson,
@@ -1409,7 +1368,6 @@ class SyncQueueCompanion extends UpdateCompanion<SyncQueueData> {
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
-      if (staffId != null) 'staff_id': staffId,
       if (levelId != null) 'level_id': levelId,
       if (date != null) 'date': date,
       if (payloadJson != null) 'payload_json': payloadJson,
@@ -1423,7 +1381,6 @@ class SyncQueueCompanion extends UpdateCompanion<SyncQueueData> {
 
   SyncQueueCompanion copyWith({
     Value<int>? id,
-    Value<String>? staffId,
     Value<String>? levelId,
     Value<String>? date,
     Value<String>? payloadJson,
@@ -1435,7 +1392,6 @@ class SyncQueueCompanion extends UpdateCompanion<SyncQueueData> {
   }) {
     return SyncQueueCompanion(
       id: id ?? this.id,
-      staffId: staffId ?? this.staffId,
       levelId: levelId ?? this.levelId,
       date: date ?? this.date,
       payloadJson: payloadJson ?? this.payloadJson,
@@ -1452,9 +1408,6 @@ class SyncQueueCompanion extends UpdateCompanion<SyncQueueData> {
     final map = <String, Expression>{};
     if (id.present) {
       map['id'] = Variable<int>(id.value);
-    }
-    if (staffId.present) {
-      map['staff_id'] = Variable<String>(staffId.value);
     }
     if (levelId.present) {
       map['level_id'] = Variable<String>(levelId.value);
@@ -1487,7 +1440,6 @@ class SyncQueueCompanion extends UpdateCompanion<SyncQueueData> {
   String toString() {
     return (StringBuffer('SyncQueueCompanion(')
           ..write('id: $id, ')
-          ..write('staffId: $staffId, ')
           ..write('levelId: $levelId, ')
           ..write('date: $date, ')
           ..write('payloadJson: $payloadJson, ')
@@ -2261,7 +2213,6 @@ typedef $$AttendanceRecordsTableProcessedTableManager =
 typedef $$SyncQueueTableCreateCompanionBuilder =
     SyncQueueCompanion Function({
       Value<int> id,
-      required String staffId,
       required String levelId,
       required String date,
       required String payloadJson,
@@ -2274,7 +2225,6 @@ typedef $$SyncQueueTableCreateCompanionBuilder =
 typedef $$SyncQueueTableUpdateCompanionBuilder =
     SyncQueueCompanion Function({
       Value<int> id,
-      Value<String> staffId,
       Value<String> levelId,
       Value<String> date,
       Value<String> payloadJson,
@@ -2296,11 +2246,6 @@ class $$SyncQueueTableFilterComposer
   });
   ColumnFilters<int> get id => $composableBuilder(
     column: $table.id,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get staffId => $composableBuilder(
-    column: $table.staffId,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -2359,11 +2304,6 @@ class $$SyncQueueTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
-  ColumnOrderings<String> get staffId => $composableBuilder(
-    column: $table.staffId,
-    builder: (column) => ColumnOrderings(column),
-  );
-
   ColumnOrderings<String> get levelId => $composableBuilder(
     column: $table.levelId,
     builder: (column) => ColumnOrderings(column),
@@ -2416,9 +2356,6 @@ class $$SyncQueueTableAnnotationComposer
   });
   GeneratedColumn<int> get id =>
       $composableBuilder(column: $table.id, builder: (column) => column);
-
-  GeneratedColumn<String> get staffId =>
-      $composableBuilder(column: $table.staffId, builder: (column) => column);
 
   GeneratedColumn<String> get levelId =>
       $composableBuilder(column: $table.levelId, builder: (column) => column);
@@ -2481,7 +2418,6 @@ class $$SyncQueueTableTableManager
           updateCompanionCallback:
               ({
                 Value<int> id = const Value.absent(),
-                Value<String> staffId = const Value.absent(),
                 Value<String> levelId = const Value.absent(),
                 Value<String> date = const Value.absent(),
                 Value<String> payloadJson = const Value.absent(),
@@ -2492,7 +2428,6 @@ class $$SyncQueueTableTableManager
                 Value<DateTime> updatedAt = const Value.absent(),
               }) => SyncQueueCompanion(
                 id: id,
-                staffId: staffId,
                 levelId: levelId,
                 date: date,
                 payloadJson: payloadJson,
@@ -2505,7 +2440,6 @@ class $$SyncQueueTableTableManager
           createCompanionCallback:
               ({
                 Value<int> id = const Value.absent(),
-                required String staffId,
                 required String levelId,
                 required String date,
                 required String payloadJson,
@@ -2516,7 +2450,6 @@ class $$SyncQueueTableTableManager
                 required DateTime updatedAt,
               }) => SyncQueueCompanion.insert(
                 id: id,
-                staffId: staffId,
                 levelId: levelId,
                 date: date,
                 payloadJson: payloadJson,

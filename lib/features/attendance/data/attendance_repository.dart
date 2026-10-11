@@ -34,7 +34,6 @@ class AttendanceRepository {
   }
 
   Future<void> saveAttendance({
-    required String staffId,
     required String levelId,
     required String date,
     required List<StudentMark> marks,
@@ -59,7 +58,6 @@ class AttendanceRepository {
     );
 
     final job = SyncQueueCompanion.insert(
-      staffId: staffId,
       levelId: levelId,
       date: date,
       payloadJson: payload,

@@ -129,17 +129,8 @@ class AttendanceController
     state = state.copyWith(marks: marks);
   }
 
-  /// Save locally and enqueue for sync. Returns true on success. This is
-  /// instant and offline-safe: it writes to the local DB and queues the job in
-  /// one transaction, regardless of connectivity.
   Future<bool> save() async {
     if (state.saving || state.students.isEmpty) return false;
-
-    final staffId = await ref.read(secureStorageProvider).readStaffId();
-    if (staffId == null || staffId.isEmpty) {
-      state = state.copyWith(error: 'Missing staff information. Please sign in again.');
-      return false;
-    }
 
     state = state.copyWith(saving: true, error: null);
 
@@ -152,7 +143,6 @@ class AttendanceController
 
     try {
       await ref.read(attendanceRepositoryProvider).saveAttendance(
-            staffId: staffId,
             levelId: arg.levelId,
             date: arg.date,
             marks: marks,

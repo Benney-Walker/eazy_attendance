@@ -50,12 +50,9 @@ class ApiService {
     final requiresAuth = options.extra['requiresAuth'] != false;
     if (requiresAuth) {
       final token = await _storage.readToken();
-      final staffId = await _storage.readStaffId();
+
       if (token != null && token.isNotEmpty) {
         options.headers['Authorization'] = 'Bearer $token';
-      }
-      if (staffId != null && staffId.isNotEmpty) {
-        options.headers['staffId'] = staffId;
       }
     }
     handler.next(options);
@@ -88,12 +85,10 @@ class ApiService {
 
     try {
       final newToken = await _storage.readToken();
-      final staffId = await _storage.readStaffId();
+
       final retryHeaders = Map<String, dynamic>.from(options.headers)
         ..['Authorization'] = 'Bearer $newToken';
-      if (staffId != null && staffId.isNotEmpty) {
-        retryHeaders['staffId'] = staffId;
-      }
+
       final retryOptions = Options(
         method: options.method,
         headers: retryHeaders,
