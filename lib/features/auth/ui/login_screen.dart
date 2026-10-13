@@ -11,11 +11,6 @@ import '../../../core/widgets/app_text_field.dart';
 import '../../../core/widgets/loading_button.dart';
 import '../application/auth_controller.dart';
 
-/// Login screen — the native Android counterpart of the website's login page.
-///
-/// Phase 1 scope: full UI + client-side validation only. The real
-/// `POST /auth/v1/staff-login` call, secure token storage, and navigation to
-/// the dashboard are wired in Phase 2 (see the marked TODO).
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
 
@@ -70,14 +65,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
     setState(() => _loading = true);
 
-    // Real login. On success the AuthController flips global auth state and the
-    // AuthGate swaps this screen for the signed-in home automatically — so
-    // there's no manual navigation here. On failure we show the mapped message.
     try {
       await ref
           .read(authControllerProvider.notifier)
           .login(staffId: staffId, password: password);
-      // Success: no-op. The gate rebuilds and replaces this screen.
+
     } on ApiException catch (e) {
       if (!mounted) return;
       setState(() {

@@ -34,28 +34,18 @@ class AuthState {
   );
 }
 
-/// Owns the session lifecycle: restore-on-launch (auto-login), login, logout.
-///
-/// The UI watches [authControllerProvider] for routing (gate) and calls
-/// [login] / [logout]. Transient login progress/errors are handled locally by
-/// the login screen via [AsyncValue]; this notifier holds the durable status.
 class AuthController extends AsyncNotifier<AuthState> {
   AuthRepository get _repo => ref.read(authRepositoryProvider);
 
   @override
   Future<AuthState> build() async {
-    // Wire the session-expired handler: this fires only when a token REFRESH
-    // fails (refresh token invalid/expired after ~1 week) — not on an ordinary
-    // access-token 401, which ApiService refreshes and retries transparently.
-    // When it fires, clear the session so the AuthGate routes to login. The
-    // sync queue is left intact so unsynced attendance survives.
+
     ref.read(apiServiceProvider).onSessionExpired = _handleSessionExpired;
 
     return _restoreSession();
   }
 
   void _handleSessionExpired() {
-    // ignore: discarded_futures
     _sessionExpiredLogout();
   }
 
@@ -73,8 +63,6 @@ class AuthController extends AsyncNotifier<AuthState> {
     return AuthState(status: AuthStatus.authenticated, staffName: name);
   }
 
-  /// The remembered staffId to pre-fill the login form (or null). Only the
-  /// staffId is ever stored — never the password.
   Future<String?> rememberedStaffId() => _repo.rememberedStaffId();
 
   /// Attempt a login. On success, flips global state to authenticated.
@@ -83,7 +71,7 @@ class AuthController extends AsyncNotifier<AuthState> {
     required String password,
   }) async {
     final staffName = await _repo.login(staffId: staffId, password: password);
-    // Re-arm the session guard so a future refresh-failure triggers logout.
+
     ref.read(apiServiceProvider).resetSessionGuard();
     state = AsyncData(
       AuthState(status: AuthStatus.authenticated, staffName: staffName),

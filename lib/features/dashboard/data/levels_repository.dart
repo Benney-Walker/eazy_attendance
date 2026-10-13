@@ -7,12 +7,6 @@ import '../../../core/network/api_exception.dart';
 import '../../../core/network/api_service.dart';
 import 'level_models.dart';
 
-/// Local-first access to the staff's classes.
-///
-/// Reads always come from the local cache so the dashboard renders instantly
-/// and works offline. [refresh] pulls the latest from the backend and updates
-/// the cache; callers decide when to refresh (e.g. on dashboard open) and can
-/// fall back to [getCached] when offline.
 class LevelsRepository {
   LevelsRepository(this._api, this._db);
 
@@ -38,6 +32,7 @@ class LevelsRepository {
     }
 
     final status = response.statusCode ?? 0;
+    final message = response.statusMessage.toString() ?? '';
     if (status == 401) throw const UnauthorizedException();
     if (status < 200 || status >= 300) {
       throw ServerException('Failed to load classes.', status);

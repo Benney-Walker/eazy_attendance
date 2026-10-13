@@ -25,11 +25,10 @@ class AuthRepository {
       response = await _api.client.post(
         ApiConfig.staffLogin,
         data: request.toJson(),
-        options: noAuth(), // login runs before a token exists
+        options: noAuth(),
       );
     } on DioException catch (e) {
-      // Connection/timeout/DNS failures land here (validateStatus lets all
-      // HTTP statuses through, so this is genuinely a transport failure).
+
       throw _mapDioException(e);
     }
 
