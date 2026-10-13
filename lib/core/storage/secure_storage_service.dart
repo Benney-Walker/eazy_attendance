@@ -14,7 +14,6 @@ class SecureStorageService {
   static const _kToken = 'auth_token';
   static const _kRefreshToken = 'refresh_token';
   static const _kStaffName = 'staff_name';
-  static const _kStaffId = 'staff_id';
   static const _kInstitution = 'institution_name';
 
   static const _kRememberedStaffId = 'remembered_staff_id';
@@ -31,7 +30,6 @@ class SecureStorageService {
       _storage.write(key: _kToken, value: token),
       _storage.write(key: _kRefreshToken, value: refreshToken),
       _storage.write(key: _kStaffName, value: staffName),
-      _storage.write(key: _kStaffId, value: staffId),
       _storage.write(key: _kInstitution, value: institutionName),
       // Remember the staffId for next time (persists across logout).
       _storage.write(key: _kRememberedStaffId, value: staffId),
@@ -48,8 +46,6 @@ class SecureStorageService {
   Future<String?> readRefreshToken() => _storage.read(key: _kRefreshToken);
 
   Future<String?> readStaffName() => _storage.read(key: _kStaffName);
-
-  Future<String?> readStaffId() => _storage.read(key: _kStaffId);
 
   Future<String?> readInstitutionName() => _storage.read(key: _kInstitution);
 

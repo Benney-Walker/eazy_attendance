@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../core/core_providers.dart';
 import '../../../core/sync/sync_controller.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
@@ -9,24 +8,8 @@ import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/date_utils.dart';
 import '../../auth/application/auth_controller.dart';
 
-/// The signed-in staff's ID (read from secure storage; not held in AuthState).
-final _staffIdProvider = FutureProvider<String?>((ref) {
-  return ref.watch(secureStorageProvider).readStaffId();
-});
-
-/// App version shown in About. Kept in sync with pubspec.yaml `version:` by
-/// hand (a one-line edit on release). Avoids a native plugin — see note below.
-///
-/// We intentionally do NOT use package_info_plus: it triggered a Kotlin
-/// incremental-compiler crash when the Pub cache and the project live on
-/// different Windows drives ("different roots"), and it emits a Kotlin Gradle
-/// Plugin deprecation warning. A constant is simpler and has no build cost.
 const String kAppVersion = '1.0.0';
 
-/// Settings tab. The website has no settings page, so this is a restrained,
-/// native addition: profile, a sync section (status + manual "Sync now"),
-/// about, and logout. No invented features (no password change — admins reset
-/// staff passwords — no theme/language toggles).
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
 
@@ -60,14 +43,13 @@ class SettingsScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final staffName =
         ref.watch(authControllerProvider).valueOrNull?.staffName ?? 'Teacher';
-    final staffId = ref.watch(_staffIdProvider).valueOrNull;
 
     return Scaffold(
       appBar: AppBar(title: const Text('Settings')),
       body: ListView(
         padding: const EdgeInsets.all(20),
         children: [
-          _ProfileCard(staffName: staffName, staffId: staffId),
+          _ProfileCard(staffName: staffName, staffId: ''),
           const SizedBox(height: 24),
           _SectionLabel('Sync'),
           const SizedBox(height: 8),
