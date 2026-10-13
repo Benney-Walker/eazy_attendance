@@ -55,7 +55,11 @@ class StudentsRepository {
     final status = response.statusCode ?? 0;
     if (status == 401) throw const UnauthorizedException();
     if (status < 200 || status >= 300) {
-      throw ServerException('Failed to load students.', status);
+      final data = response.data;
+
+      final message = data is Map<String, dynamic> ?
+          data['message']?.toString() : 'Failed to load students.';
+      throw ServerException(message!, status);
     }
 
     final data = response.data;
