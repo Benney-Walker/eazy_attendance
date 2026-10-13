@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:dio/dio.dart';
 import 'package:drift/drift.dart';
 
@@ -38,10 +40,6 @@ class StudentsRepository {
     }).toList();
   }
 
-  /// Fetch the roster for (level, date) from the backend, cache the names, and
-  /// return students. If a local mark already exists for a student on that
-  /// date, it takes precedence over the backend status (unsynced local edits
-  /// must not be clobbered by a refresh).
   Future<List<StudentModel>> refresh(String levelId, String date) async {
     final Response<dynamic> response;
     try {
