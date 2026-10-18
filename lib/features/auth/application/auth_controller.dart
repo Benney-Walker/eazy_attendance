@@ -17,20 +17,22 @@ final authRepositoryProvider = Provider<AuthRepository>((ref) {
 /// High-level authentication status for the whole app.
 enum AuthStatus { unknown, authenticated, unauthenticated }
 
-/// Immutable snapshot of who (if anyone) is signed in.
 class AuthState {
-  const AuthState({required this.status, this.staffName});
+  const AuthState({required this.status, this.staffName, this.institutionName});
 
   final AuthStatus status;
   final String? staffName;
+  final String? institutionName;
 
   const AuthState.unknown()
       : status = AuthStatus.unknown,
-        staffName = null;
+        staffName = null,
+        institutionName = null;
 
-  AuthState copyWith({AuthStatus? status, String? staffName}) => AuthState(
+  AuthState copyWith({AuthStatus? status, String? staffName, String? institutionName}) => AuthState(
     status: status ?? this.status,
     staffName: staffName ?? this.staffName,
+    institutionName: institutionName ?? this.institutionName
   );
 }
 
@@ -50,7 +52,7 @@ class AuthController extends AsyncNotifier<AuthState> {
   }
 
   Future<void> _sessionExpiredLogout() async {
-    await _repo.logout(); // clears tokens, keeps remembered staffId + sync queue
+    await _repo.logout(); // clears tokens
     state = const AsyncData(AuthState(status: AuthStatus.unauthenticated));
   }
 
