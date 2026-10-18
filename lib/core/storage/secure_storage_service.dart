@@ -24,7 +24,7 @@ class SecureStorageService {
     required String refreshToken,
     required String staffName,
     required String staffId,
-    String institutionName = '',
+    required String institutionName,
   }) async {
     await Future.wait([
       _storage.write(key: _kToken, value: token),
