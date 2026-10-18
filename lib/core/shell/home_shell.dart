@@ -1,3 +1,4 @@
+import 'package:eazy_attendance/features/home/ui/home_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -17,7 +18,11 @@ class _HomeShellState extends ConsumerState<HomeShell>
     with WidgetsBindingObserver {
   int _index = 0;
 
-  static const _tabs = [DashboardScreen(), SettingsScreen()];
+  static const _tabs = [
+    HomeScreen(),
+    DashboardScreen(),
+    SettingsScreen()
+  ];
 
   @override
   void initState() {
@@ -67,9 +72,14 @@ class _HomeShellState extends ConsumerState<HomeShell>
           labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
           destinations: const [
             NavigationDestination(
+              icon: Icon(Icons.dashboard_outlined, color: AppColors.gray400),
+              selectedIcon: Icon(Icons.dashboard, color: AppColors.blue600),
+              label: 'Home',
+            ),
+            NavigationDestination(
               icon: Icon(Icons.checklist_outlined, color: AppColors.gray400),
               selectedIcon: Icon(Icons.checklist, color: AppColors.blue600),
-              label: 'Dashboard',
+              label: 'Attendance',
             ),
             NavigationDestination(
               icon: Icon(Icons.settings_outlined, color: AppColors.gray400),
