@@ -242,18 +242,24 @@ class _AboutCard extends StatelessWidget {
           _AboutRow(label: 'Provider', value: 'Bynex Labs'),
           const Divider(height: 1),
           InkWell(
-            onTap: () => Navigator.of(context).pushNamed('/terms'),
+            onTap: () async {
+              // Replace this with your actual HTTPS link
+              final url = Uri.parse('https://eazyattendanceprivacypolicy.vercel.app');
+
+              if (!await launchUrl(url, mode: LaunchMode.externalApplication)) {
+                // Optional: Show a snackbar if the device can't open the link
+                debugPrint('Could not launch $url');
+              }
+            },
             borderRadius: const BorderRadius.vertical(
                 bottom: Radius.circular(AppTheme.radiusMd)),
             child: Padding(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
               child: Row(
                 children: [
-                  Text('Terms of Service', style: AppTextStyles.input),
+                                    Text('Privacy Policy', style: AppTextStyles.input),
                   const Spacer(),
-                  const Icon(Icons.chevron_right,
-                      size: 20, color: AppColors.gray400),
+                  const Icon(Icons.open_in_new, size: 18, color: AppColors.gray400),
                 ],
               ),
             ),
