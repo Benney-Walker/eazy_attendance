@@ -16,7 +16,7 @@ class LoginResponse {
     required this.refreshToken,
     required this.staffName,
     required this.staffId,
-    this.institutionName = '',
+    required this.institutionName,
     this.roles = const [],
   });
 
