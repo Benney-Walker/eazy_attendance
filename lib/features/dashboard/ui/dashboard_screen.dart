@@ -89,8 +89,6 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
   @override
   Widget build(BuildContext context) {
     final asyncState = ref.watch(dashboardControllerProvider);
-    final staffName =
-        ref.watch(authControllerProvider).valueOrNull?.staffName ?? 'Teacher';
 
     return Scaffold(
       appBar: AppBar(
@@ -135,7 +133,6 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
         ),
         data: (state) => _DashboardBody(
           state: state,
-          staffName: staffName,
           loadingStudents: _loadingStudents,
           onSelectClass: (id) =>
               ref.read(dashboardControllerProvider.notifier).selectClass(id),
@@ -159,7 +156,6 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
 class _DashboardBody extends StatelessWidget {
   const _DashboardBody({
     required this.state,
-    required this.staffName,
     required this.loadingStudents,
     required this.onSelectClass,
     required this.onPickDate,
@@ -167,7 +163,6 @@ class _DashboardBody extends StatelessWidget {
   });
 
   final DashboardState state;
-  final String staffName;
   final bool loadingStudents;
   final ValueChanged<String?> onSelectClass;
   final VoidCallback onPickDate;
@@ -187,10 +182,6 @@ class _DashboardBody extends StatelessWidget {
               style: AppTextStyles.sectionSubtitle),
           const SizedBox(height: 20),
 
-          // Teacher info strip
-          _TeacherStrip(staffName: staffName),
-          const SizedBox(height: 20),
-
           // Class + Date card
           _SelectionCard(
             state: state,
@@ -206,48 +197,6 @@ class _DashboardBody extends StatelessWidget {
             icon: Icons.groups_outlined,
             loading: loadingStudents,
             onPressed: onLoadStudents,
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _TeacherStrip extends StatelessWidget {
-  const _TeacherStrip({required this.staffName});
-
-  final String staffName;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: AppColors.blue50,
-        borderRadius: BorderRadius.circular(AppTheme.radiusMd),
-        border: Border.all(color: AppColors.blue100, width: 1.5),
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 42,
-            height: 42,
-            decoration: BoxDecoration(
-              color: AppColors.white,
-              borderRadius: BorderRadius.circular(AppTheme.radiusSm),
-            ),
-            child: const Icon(Icons.person_outline,
-                size: 20, color: AppColors.blue600),
-          ),
-          const SizedBox(width: 12),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(staffName,
-                  style: AppTextStyles.input
-                      .copyWith(fontWeight: FontWeight.w600)),
-              Text('Signed in as Teacher', style: AppTextStyles.footer),
-            ],
           ),
         ],
       ),
