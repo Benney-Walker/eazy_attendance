@@ -111,8 +111,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         error: _error,
                         loading: _loading,
                         onSubmit: _handleLogin,
-                        onTermsTap: () =>
-                            Navigator.of(context).pushNamed('/terms'),
                       ),
                       const SizedBox(height: 24),
                       Text('Powered by Bynex Labs',
@@ -172,7 +170,6 @@ class _LoginCard extends StatelessWidget {
     required this.error,
     required this.loading,
     required this.onSubmit,
-    required this.onTermsTap,
   });
 
   final TextEditingController staffIdController;
@@ -181,7 +178,6 @@ class _LoginCard extends StatelessWidget {
   final String? error;
   final bool loading;
   final VoidCallback onSubmit;
-  final VoidCallback onTermsTap;
 
   @override
   Widget build(BuildContext context) {
@@ -249,25 +245,6 @@ class _LoginCard extends StatelessWidget {
               icon: Icons.login,
               loading: loading,
               onPressed: onSubmit,
-            ),
-            const SizedBox(height: 20),
-            Center(
-              child: Wrap(
-                alignment: WrapAlignment.center,
-                crossAxisAlignment: WrapCrossAlignment.center,
-                children: [
-                  const Text("By signing in you agree to the system's ",
-                      style: AppTextStyles.footer),
-                  GestureDetector(
-                    onTap: onTermsTap,
-                    child: Text(
-                      'Terms of Service',
-                      style: AppTextStyles.footer
-                          .copyWith(color: AppColors.blue500),
-                    ),
-                  ),
-                ],
-              ),
             ),
           ],
         ),
