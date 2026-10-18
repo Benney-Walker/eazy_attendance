@@ -36,8 +36,6 @@ class SecureStorageService {
     ]);
   }
 
-  /// Replace just the access token after a successful refresh (the refresh
-  /// token and everything else are untouched).
   Future<void> updateAccessToken(String token) =>
       _storage.write(key: _kToken, value: token);
 

@@ -9,10 +9,6 @@ import '../../../core/utils/date_utils.dart';
 import '../../dashboard/data/level_models.dart';
 import '../application/attendance_controller.dart';
 
-/// The attendance marking screen — native port of the website's AttendancePage.
-/// Opened full-screen over the bottom-nav shell (its own back button + sticky
-/// Save bar). Loads the roster local-first; marking and saving work identically
-/// on or offline (save writes locally and enqueues for sync).
 class AttendanceScreen extends ConsumerStatefulWidget {
   const AttendanceScreen({
     super.key,

@@ -10,13 +10,10 @@ import '../../../core/utils/date_utils.dart';
 import '../../../core/widgets/loading_button.dart';
 import '../../attendance/application/load_students_controller.dart';
 import '../../attendance/ui/attendance_screen.dart';
-import '../../auth/application/auth_controller.dart';
 import '../application/dashboard_controller.dart';
 import '../data/level_models.dart';
 
-/// The dashboard — native port of the website's DashboardPage. Staff pick a
-/// class and date, then load the roster. Classes load local-first (instant from
-/// cache, refreshed when online), so the screen is usable offline.
+
 class DashboardScreen extends ConsumerStatefulWidget {
   const DashboardScreen({super.key});
 
@@ -47,9 +44,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
   }
 
   Future<void> _loadStudents(String levelId, String date, String className) async {
-    // The AttendanceScreen loads the roster itself (local-first). We still do a
-    // quick pre-check here so a totally empty offline state surfaces on the
-    // dashboard rather than pushing an empty screen.
+
     setState(() => _loadingStudents = true);
     try {
       final result =

@@ -6,9 +6,6 @@ import '../../../core/utils/date_utils.dart';
 import '../data/data_providers.dart';
 import '../data/level_models.dart';
 
-/// Immutable dashboard state: the class list, the current selection, and load
-/// status. `offlineNotice` is true when we're showing cached classes because a
-/// network refresh could not reach the server.
 class DashboardState {
   const DashboardState({
     this.classes = const [],
@@ -20,7 +17,7 @@ class DashboardState {
 
   final List<LevelModel> classes;
   final String? selectedClassId;
-  final String date; // yyyy-MM-dd
+  final String date;
   final bool loadingClasses;
   final bool offlineNotice;
 
@@ -47,9 +44,6 @@ class DashboardState {
 const _prefSelectedClass = 'selected_level_id';
 const _prefSelectedDate = 'selected_date';
 
-/// Drives the dashboard: loads classes local-first (cache instantly, refresh
-/// from network when reachable, fall back to cache when offline), and tracks
-/// the selected class + date, persisting them so the screen restores state.
 class DashboardController extends AsyncNotifier<DashboardState> {
   @override
   Future<DashboardState> build() async {
@@ -83,9 +77,7 @@ class DashboardController extends AsyncNotifier<DashboardState> {
         offlineNotice: false,
       );
     } on ApiException {
-      // Offline or server error: keep cached classes. Mark offline only if we
-      // truly have nothing fresh; an empty cache with no network is a real
-      // "can't load" state the UI can message.
+
       result = result.copyWith(
         loadingClasses: false,
         offlineNotice: cached.isNotEmpty,

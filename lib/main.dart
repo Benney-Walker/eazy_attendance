@@ -18,8 +18,6 @@ class EazyAttendanceApp extends StatelessWidget {
       title: 'Eazy Attendance',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light,
-      // The gate performs auto-login and shows either the signed-in home or the
-      // login screen. Phase 3+ add '/dashboard', '/attendance', '/settings'.
       home: const AuthGate(),
       routes: {
         '/terms': (_) => const TermsScreen(),
