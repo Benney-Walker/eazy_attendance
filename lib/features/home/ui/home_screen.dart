@@ -34,13 +34,17 @@ class HomeScreen extends ConsumerWidget{
                 children: [
                   const Icon(Icons.school, size: 16, color: AppColors.gray600),
                   const SizedBox(width: 8),
-                  Text(
-                    schoolName,
-                    style: AppTextStyles.footer.copyWith(
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.gray600,
-                    )
+                  Flexible(
+                    child: Text(
+                        schoolName,
+                        style: AppTextStyles.footer.copyWith(
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.gray600,
+                        ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
                   )
+
                 ],
               ),
             ),
