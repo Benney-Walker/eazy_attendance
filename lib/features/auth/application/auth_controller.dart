@@ -62,7 +62,8 @@ class AuthController extends AsyncNotifier<AuthState> {
       return const AuthState(status: AuthStatus.unauthenticated);
     }
     final name = await _repo.currentStaffName();
-    return AuthState(status: AuthStatus.authenticated, staffName: name);
+    final institutionName = await _repo.institutionName();
+    return AuthState(status: AuthStatus.authenticated, staffName: name, institutionName: institutionName);
   }
 
   Future<String?> rememberedStaffId() => _repo.rememberedStaffId();
@@ -73,10 +74,11 @@ class AuthController extends AsyncNotifier<AuthState> {
     required String password,
   }) async {
     final staffName = await _repo.login(staffId: staffId, password: password);
+    final institutionName = await _repo.institutionName();
 
     ref.read(apiServiceProvider).resetSessionGuard();
     state = AsyncData(
-      AuthState(status: AuthStatus.authenticated, staffName: staffName),
+      AuthState(status: AuthStatus.authenticated, staffName: staffName, institutionName: institutionName),
     );
   }
 
