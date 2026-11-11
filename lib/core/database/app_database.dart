@@ -180,9 +180,62 @@ class AppDatabase extends _$AppDatabase {
     return (delete(syncQueue)..where((j) => j.id.equals(id))).go();
   }
 
+  /// Return jobs left in SYNCING by an interrupted upload (app killed, crash)
+  /// to PENDING. Only call this when no upload is in flight — the sync pass
+  /// does so at its start, inside its own lock.
+  Future<void> recoverInterruptedJobs() {
+    return (update(syncQueue)..where((j) => j.status.equals('SYNCING'))).write(
+      SyncQueueCompanion(
+        status: const Value('PENDING'),
+        updatedAt: Value(DateTime.now()),
+      ),
+    );
+  }
+
+  /// Finish a successfully uploaded job: delete it and mark its records synced.
+  ///
+  /// Both steps only happen if the job is still SYNCING. If the teacher
+  /// re-saved the class while the upload was in flight, the job was reset to
+  /// PENDING with the newer marks; it is kept so the next pass sends them.
+  /// Returns true when the job was completed.
+  Future<bool> completeJob(SyncQueueData job) {
+    return transaction(() async {
+      final deleted = await (delete(syncQueue)
+            ..where((j) => j.id.equals(job.id) & j.status.equals('SYNCING')))
+          .go();
+      if (deleted == 0) return false;
+      await markAttendanceSynced(job.levelId, job.date);
+      return true;
+    });
+  }
+
+  /// Record a failed upload attempt, unless the job was re-saved while the
+  /// upload was in flight (then its counters were already reset).
+  Future<void> failJob({
+    required int id,
+    required int attemptCount,
+    required bool parked,
+    required String error,
+  }) {
+    return (update(syncQueue)
+          ..where((j) => j.id.equals(id) & j.status.equals('SYNCING')))
+        .write(
+      SyncQueueCompanion(
+        status: Value(parked ? 'FAILED' : 'PENDING'),
+        attemptCount: Value(attemptCount),
+        lastError: Value(error),
+        updatedAt: Value(DateTime.now()),
+      ),
+    );
+  }
+
   /// Enqueue (or replace) the pending job for a (level, date) atomically with
   /// the record upsert. Last-write-wins: an existing unsynced job for the same
   /// class/date is overwritten rather than duplicated.
+  ///
+  /// A replaced job is re-armed (PENDING, zero attempts) so new marks are
+  /// uploaded even if the previous payload had been parked as FAILED, and it
+  /// keeps its original createdAt so queue order stays first-in, first-out.
   Future<void> saveAttendanceAndEnqueue({
     required List<AttendanceRecordsCompanion> records,
     required SyncQueueCompanion job,
@@ -195,7 +248,15 @@ class AppDatabase extends _$AppDatabase {
       });
       final existing = await findJobForLevelDate(levelId, date);
       if (existing != null) {
-        await updateJob(existing.id, job);
+        await updateJob(
+          existing.id,
+          job.copyWith(
+            status: const Value('PENDING'),
+            attemptCount: const Value(0),
+            lastError: const Value(null),
+            createdAt: Value(existing.createdAt),
+          ),
+        );
       } else {
         await into(syncQueue).insert(job);
       }
