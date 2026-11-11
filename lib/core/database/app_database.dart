@@ -147,6 +147,20 @@ class AppDatabase extends _$AppDatabase {
     });
   }
 
+  /// Remove one teacher's cached classes, rosters, saved selections and
+  /// already-uploaded marks, e.g. when a different teacher signs in on the
+  /// same device. Unsynced marks and the sync queue are deliberately kept so
+  /// nothing that hasn't reached the server is lost.
+  Future<void> clearCachedClassData() {
+    return transaction(() async {
+      await delete(levels).go();
+      await delete(students).go();
+      await delete(preferences).go();
+      await (delete(attendanceRecords)..where((r) => r.synced.equals(true)))
+          .go();
+    });
+  }
+
   /// Mark every record for a (level, date) as synced once its job succeeds.
   Future<void> markAttendanceSynced(String levelId, String date) {
     return (update(attendanceRecords)

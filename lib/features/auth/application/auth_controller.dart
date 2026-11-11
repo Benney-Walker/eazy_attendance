@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/core_providers.dart';
@@ -73,8 +74,22 @@ class AuthController extends AsyncNotifier<AuthState> {
     required String staffId,
     required String password,
   }) async {
+    final previousStaffId = await _repo.rememberedStaffId();
     final staffName = await _repo.login(staffId: staffId, password: password);
     final institutionName = await _repo.institutionName();
+
+    // A different teacher on the same device must not see the previous
+    // teacher's cached classes, rosters or selections (offline especially).
+    if (previousStaffId != null &&
+        previousStaffId.isNotEmpty &&
+        previousStaffId != staffId) {
+      try {
+        await ref.read(appDatabaseProvider).clearCachedClassData();
+      } catch (e) {
+        // Not fatal: the next online refresh replaces the cache anyway.
+        debugPrint('Could not clear previous account cache: $e');
+      }
+    }
 
     ref.read(apiServiceProvider).resetSessionGuard();
     state = AsyncData(
