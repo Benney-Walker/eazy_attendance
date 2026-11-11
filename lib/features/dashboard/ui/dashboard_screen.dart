@@ -60,6 +60,9 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
             levelId: levelId,
             date: date,
             className: className,
+            // Hand over the roster just loaded so it isn't fetched twice.
+            initialStudents: result.students,
+            initialFromCache: result.fromCache,
           ),
         ),
       );

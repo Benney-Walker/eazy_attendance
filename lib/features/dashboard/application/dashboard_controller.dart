@@ -44,7 +44,10 @@ class DashboardState {
 const _prefSelectedClass = 'selected_level_id';
 const _prefSelectedDate = 'selected_date';
 
-class DashboardController extends AsyncNotifier<DashboardState> {
+/// Auto-dispose: the dashboard lives inside HomeShell, which is torn down on
+/// sign-out, so the next sign-in rebuilds this from scratch instead of showing
+/// the previous teacher's classes.
+class DashboardController extends AutoDisposeAsyncNotifier<DashboardState> {
   @override
   Future<DashboardState> build() async {
     final db = ref.read(appDatabaseProvider);
@@ -112,5 +115,5 @@ class DashboardController extends AsyncNotifier<DashboardState> {
 }
 
 final dashboardControllerProvider =
-    AsyncNotifierProvider<DashboardController, DashboardState>(
+    AsyncNotifierProvider.autoDispose<DashboardController, DashboardState>(
         DashboardController.new);

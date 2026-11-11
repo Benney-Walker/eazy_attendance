@@ -15,11 +15,17 @@ class AttendanceScreen extends ConsumerStatefulWidget {
     required this.levelId,
     required this.date,
     required this.className,
+    this.initialStudents,
+    this.initialFromCache = false,
   });
 
   final String levelId;
   final String date;
   final String className;
+
+  /// Roster already loaded by the caller; when null the screen loads it.
+  final List<StudentModel>? initialStudents;
+  final bool initialFromCache;
 
   @override
   ConsumerState<AttendanceScreen> createState() => _AttendanceScreenState();
@@ -34,6 +40,8 @@ class _AttendanceScreenState extends ConsumerState<AttendanceScreen> {
     levelId: widget.levelId,
     date: widget.date,
     className: widget.className,
+    initialStudents: widget.initialStudents,
+    initialFromCache: widget.initialFromCache,
   );
 
   @override
