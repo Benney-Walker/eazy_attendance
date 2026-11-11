@@ -18,13 +18,17 @@ class SyncNotifier {
   static const String _channelDescription =
       'Quiet notifications while attendance syncs in the background.';
 
+  /// Monochrome status-bar icon (android/app/src/main/res/drawable). Kept from
+  /// resource shrinking by res/raw/keep.xml because it is referenced by name.
+  static const String _smallIcon = '@drawable/ic_stat_sync';
+
   bool _initialized = false;
 
   /// Initialise the plugin. Safe to call more than once.
   Future<void> init() async {
     if (_initialized) return;
     const androidInit =
-        AndroidInitializationSettings('@mipmap/ic_launcher');
+        AndroidInitializationSettings(_smallIcon);
     const initSettings = InitializationSettings(android: androidInit);
     await _plugin.initialize(initSettings);
     _initialized = true;
@@ -32,13 +36,20 @@ class SyncNotifier {
 
   /// Request notification permission (Android 13+). No-op on older versions,
   /// where notifications are granted at install time. Returns whether granted.
+  ///
+  /// Never throws: it is called fire-and-forget from the home shell, and a
+  /// notification problem must not surface as an app error.
   Future<bool> requestPermission() async {
-    await init();
-    final android = _plugin.resolvePlatformSpecificImplementation<
-        AndroidFlutterLocalNotificationsPlugin>();
-    if (android == null) return true;
-    final granted = await android.requestNotificationsPermission();
-    return granted ?? true;
+    try {
+      await init();
+      final android = _plugin.resolvePlatformSpecificImplementation<
+          AndroidFlutterLocalNotificationsPlugin>();
+      if (android == null) return true;
+      final granted = await android.requestNotificationsPermission();
+      return granted ?? true;
+    } catch (_) {
+      return false;
+    }
   }
 
   AndroidNotificationDetails get _quietOngoing => const AndroidNotificationDetails(
@@ -53,7 +64,7 @@ class SyncNotifier {
         ongoing: true,
         showProgress: true,
         indeterminate: true,
-        icon: '@mipmap/ic_launcher',
+        icon: _smallIcon,
       );
 
   AndroidNotificationDetails get _quietDone => const AndroidNotificationDetails(
@@ -66,7 +77,7 @@ class SyncNotifier {
         enableVibration: false,
         onlyAlertOnce: true,
         autoCancel: true,
-        icon: '@mipmap/ic_launcher',
+        icon: _smallIcon,
       );
 
   /// Show the ongoing "Syncing…" notification.

@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../core_providers.dart';
@@ -103,44 +104,57 @@ class SyncController extends Notifier<SyncState> {
     final service = ref.read(syncServiceProvider);
     final notifier = ref.read(syncNotifierProvider);
 
-    // Only surface a notification when there's actually queued work to upload.
-    final pendingBefore = await service.pendingCount();
-    final notify = pendingBefore > 0;
-
     state = state.copyWith(phase: SyncPhase.syncing, justSynced: false);
-    if (notify) {
-      await notifier.showSyncing();
+
+    var notify = false;
+    var succeeded = 0;
+    try {
+      // Only surface a notification when there's actually queued work.
+      notify = await service.pendingCount() > 0;
+      if (notify) await _notifySafely(notifier.showSyncing);
+
+      succeeded = (await service.sync()).succeeded;
+    } catch (e, st) {
+      // A failed pass (e.g. a database error) must not leave the chip stuck on
+      // "Syncing…". Jobs stay queued; the next trigger retries them.
+      debugPrint('Sync pass failed: $e\n$st');
     }
-
-    final result = await service.sync();
-    final pending = await service.pendingCount();
-
-    final online = await ref.read(connectivityServiceProvider).isOnline;
 
     // Resolve the notification: confirm on success, otherwise clear it (we
     // don't nag about failures — the quiet in-app chip shows "pending").
     if (notify) {
-      if (result.succeeded > 0) {
-        await notifier.showSynced(result.succeeded);
-      } else {
-        await notifier.clear();
-      }
+      await _notifySafely(
+        succeeded > 0 ? () => notifier.showSynced(succeeded) : notifier.clear,
+      );
     }
+
+    final pending = await service.pendingCount();
+    final online = await ref.read(connectivityServiceProvider).isOnline;
 
     state = SyncState(
       phase: online ? SyncPhase.idle : SyncPhase.offline,
       pending: pending,
-      lastSyncedAt: result.succeeded > 0 ? DateTime.now() : state.lastSyncedAt,
-      justSynced: result.succeeded > 0,
+      lastSyncedAt: succeeded > 0 ? DateTime.now() : state.lastSyncedAt,
+      justSynced: succeeded > 0,
     );
 
     // Clear the momentary "just synced" flag after a short delay.
-    if (result.succeeded > 0) {
+    if (succeeded > 0) {
       Future.delayed(const Duration(seconds: 3), () {
         if (state.justSynced) {
           state = state.copyWith(justSynced: false);
         }
       });
+    }
+  }
+
+  /// Notifications are a courtesy: failing to show one (permission revoked,
+  /// missing resource) must never stop attendance from syncing.
+  Future<void> _notifySafely(Future<void> Function() action) async {
+    try {
+      await action();
+    } catch (e) {
+      debugPrint('Sync notification failed: $e');
     }
   }
 
