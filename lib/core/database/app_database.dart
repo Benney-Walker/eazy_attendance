@@ -73,7 +73,21 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.forTesting(super.executor);
 
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 2;
+
+  @override
+  MigrationStrategy get migration => MigrationStrategy(
+        onUpgrade: (m, from, to) async {
+          if (from < 2) {
+            // Schema 1 originally created sync_queue with a NOT NULL staff_id
+            // column. The column was later dropped from the table definition
+            // without a version bump, so devices with an older install still
+            // have it and every insert fails. Rebuild the table from the
+            // current definition; rows are copied, staff_id is discarded.
+            await m.alterTable(TableMigration(syncQueue));
+          }
+        },
+      );
 
   // ── Preferences (key-value UI state) ──
 
