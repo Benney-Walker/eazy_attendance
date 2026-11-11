@@ -73,7 +73,21 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.forTesting(super.executor);
 
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 2;
+
+  @override
+  MigrationStrategy get migration => MigrationStrategy(
+        onUpgrade: (m, from, to) async {
+          if (from < 2) {
+            // Schema 1 originally created sync_queue with a NOT NULL staff_id
+            // column. The column was later dropped from the table definition
+            // without a version bump, so devices with an older install still
+            // have it and every insert fails. Rebuild the table from the
+            // current definition; rows are copied, staff_id is discarded.
+            await m.alterTable(TableMigration(syncQueue));
+          }
+        },
+      );
 
   // ── Preferences (key-value UI state) ──
 
@@ -133,6 +147,20 @@ class AppDatabase extends _$AppDatabase {
     });
   }
 
+  /// Remove one teacher's cached classes, rosters, saved selections and
+  /// already-uploaded marks, e.g. when a different teacher signs in on the
+  /// same device. Unsynced marks and the sync queue are deliberately kept so
+  /// nothing that hasn't reached the server is lost.
+  Future<void> clearCachedClassData() {
+    return transaction(() async {
+      await delete(levels).go();
+      await delete(students).go();
+      await delete(preferences).go();
+      await (delete(attendanceRecords)..where((r) => r.synced.equals(true)))
+          .go();
+    });
+  }
+
   /// Mark every record for a (level, date) as synced once its job succeeds.
   Future<void> markAttendanceSynced(String levelId, String date) {
     return (update(attendanceRecords)
@@ -166,9 +194,62 @@ class AppDatabase extends _$AppDatabase {
     return (delete(syncQueue)..where((j) => j.id.equals(id))).go();
   }
 
+  /// Return jobs left in SYNCING by an interrupted upload (app killed, crash)
+  /// to PENDING. Only call this when no upload is in flight — the sync pass
+  /// does so at its start, inside its own lock.
+  Future<void> recoverInterruptedJobs() {
+    return (update(syncQueue)..where((j) => j.status.equals('SYNCING'))).write(
+      SyncQueueCompanion(
+        status: const Value('PENDING'),
+        updatedAt: Value(DateTime.now()),
+      ),
+    );
+  }
+
+  /// Finish a successfully uploaded job: delete it and mark its records synced.
+  ///
+  /// Both steps only happen if the job is still SYNCING. If the teacher
+  /// re-saved the class while the upload was in flight, the job was reset to
+  /// PENDING with the newer marks; it is kept so the next pass sends them.
+  /// Returns true when the job was completed.
+  Future<bool> completeJob(SyncQueueData job) {
+    return transaction(() async {
+      final deleted = await (delete(syncQueue)
+            ..where((j) => j.id.equals(job.id) & j.status.equals('SYNCING')))
+          .go();
+      if (deleted == 0) return false;
+      await markAttendanceSynced(job.levelId, job.date);
+      return true;
+    });
+  }
+
+  /// Record a failed upload attempt, unless the job was re-saved while the
+  /// upload was in flight (then its counters were already reset).
+  Future<void> failJob({
+    required int id,
+    required int attemptCount,
+    required bool parked,
+    required String error,
+  }) {
+    return (update(syncQueue)
+          ..where((j) => j.id.equals(id) & j.status.equals('SYNCING')))
+        .write(
+      SyncQueueCompanion(
+        status: Value(parked ? 'FAILED' : 'PENDING'),
+        attemptCount: Value(attemptCount),
+        lastError: Value(error),
+        updatedAt: Value(DateTime.now()),
+      ),
+    );
+  }
+
   /// Enqueue (or replace) the pending job for a (level, date) atomically with
   /// the record upsert. Last-write-wins: an existing unsynced job for the same
   /// class/date is overwritten rather than duplicated.
+  ///
+  /// A replaced job is re-armed (PENDING, zero attempts) so new marks are
+  /// uploaded even if the previous payload had been parked as FAILED, and it
+  /// keeps its original createdAt so queue order stays first-in, first-out.
   Future<void> saveAttendanceAndEnqueue({
     required List<AttendanceRecordsCompanion> records,
     required SyncQueueCompanion job,
@@ -181,7 +262,15 @@ class AppDatabase extends _$AppDatabase {
       });
       final existing = await findJobForLevelDate(levelId, date);
       if (existing != null) {
-        await updateJob(existing.id, job);
+        await updateJob(
+          existing.id,
+          job.copyWith(
+            status: const Value('PENDING'),
+            attemptCount: const Value(0),
+            lastError: const Value(null),
+            createdAt: Value(existing.createdAt),
+          ),
+        );
       } else {
         await into(syncQueue).insert(job);
       }

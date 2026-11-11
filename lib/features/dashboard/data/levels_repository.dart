@@ -32,7 +32,6 @@ class LevelsRepository {
     }
 
     final status = response.statusCode ?? 0;
-    final message = response.statusMessage.toString() ?? '';
     if (status == 401) throw const UnauthorizedException();
     if (status < 200 || status >= 300) {
       throw ServerException('Failed to load classes.', status);

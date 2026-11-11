@@ -1,23 +1,29 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../core/core_providers.dart';
-import '../../../core/network/api_exception.dart';
 import '../../../core/sync/sync_controller.dart';
 import '../../dashboard/data/level_models.dart';
 import '../data/attendance_data_providers.dart';
 import '../data/attendance_repository.dart';
 
 /// Identifies which class/date the attendance screen is working on.
+///
+/// [initialStudents] / [initialFromCache] carry the roster the dashboard has
+/// just loaded, so the screen doesn't fetch it a second time. They are not part
+/// of equality: the provider is keyed by class/date only.
 class AttendanceArgs {
   const AttendanceArgs({
     required this.levelId,
     required this.date,
     required this.className,
+    this.initialStudents,
+    this.initialFromCache = false,
   });
 
   final String levelId;
   final String date;
   final String className;
+  final List<StudentModel>? initialStudents;
+  final bool initialFromCache;
 
   @override
   bool operator ==(Object other) =>
@@ -78,40 +84,64 @@ class AttendanceState {
   static const _sentinel = Object();
 }
 
-/// Drives one attendance-marking session. Loads the roster local-first, tracks
-/// the present/absent marks in memory (so switching away and back preserves
-/// them), and saves locally + enqueues for sync on submit.
+/// Drives one attendance-marking session: tracks present/absent marks in
+/// memory and saves locally + enqueues for sync on submit.
 ///
-/// Keyed by [AttendanceArgs] so each (level, date) has its own persistent
-/// state for the app session.
+/// The state lives as long as the attendance screen is open (auto-dispose), so
+/// every visit starts from the latest roster, and nothing from one teacher's
+/// session survives into the next. Leaving without saving discards the
+/// changes, as on the website.
 class AttendanceController
-    extends FamilyNotifier<AttendanceState, AttendanceArgs> {
+    extends AutoDisposeFamilyNotifier<AttendanceState, AttendanceArgs> {
+  bool _disposed = false;
+
   @override
   AttendanceState build(AttendanceArgs arg) {
-    // Kick off the load once; state starts empty/loading.
+    // Riverpod 2 reuses the notifier instance if the provider rebuilds.
+    _disposed = false;
+    ref.onDispose(() => _disposed = true);
+
+    final seeded = arg.initialStudents;
+    if (seeded != null) {
+      return _loaded(seeded, fromCache: arg.initialFromCache);
+    }
+
+    // Opened without a pre-loaded roster: load it once.
     Future.microtask(_load);
     return const AttendanceState(students: [], marks: {}, loading: true);
   }
 
   Future<void> _load() async {
+    if (_disposed) return;
     final repo = ref.read(studentsRepositoryProvider);
+
+    List<StudentModel> students;
+    var fromCache = false;
     try {
-      final students = await repo.refresh(arg.levelId, arg.date);
-      state = AttendanceState(
-        students: students,
-        marks: _seedMarks(students),
-        loading: false,
-        fromCache: false,
-      );
-    } on ApiException {
-      final cached = await repo.getCached(arg.levelId, arg.date);
-      state = AttendanceState(
-        students: cached,
-        marks: _seedMarks(cached),
-        loading: false,
-        fromCache: true,
-      );
+      students = await repo.refresh(arg.levelId, arg.date);
+    } catch (_) {
+      // Offline, server error or unexpected payload: fall back to the cache.
+      fromCache = true;
+      try {
+        students = await repo.getCached(arg.levelId, arg.date);
+      } catch (_) {
+        students = const [];
+      }
     }
+
+    // The teacher may have left the screen while the roster was loading.
+    if (_disposed) return;
+    state = _loaded(students, fromCache: fromCache);
+  }
+
+  AttendanceState _loaded(List<StudentModel> students,
+      {required bool fromCache}) {
+    return AttendanceState(
+      students: students,
+      marks: _seedMarks(students),
+      loading: false,
+      fromCache: fromCache,
+    );
   }
 
   Map<String, bool> _seedMarks(List<StudentModel> students) {
@@ -162,5 +192,6 @@ class AttendanceController
   }
 }
 
-final attendanceControllerProvider = NotifierProvider.family<AttendanceController,
-    AttendanceState, AttendanceArgs>(AttendanceController.new);
+final attendanceControllerProvider = NotifierProvider.autoDispose
+    .family<AttendanceController, AttendanceState, AttendanceArgs>(
+        AttendanceController.new);

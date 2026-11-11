@@ -69,6 +69,11 @@ class SyncService {
     }
     _running = true;
     try {
+      // Nothing is in flight while we hold the lock, so anything still marked
+      // SYNCING was interrupted (app killed mid-upload). Without this it would
+      // never be picked up again: getPendingJobs only returns PENDING/FAILED.
+      await _db.recoverInterruptedJobs();
+
       if (!await _connectivity.isOnline) {
         return const SyncResult(attempted: 0, succeeded: 0, failed: 0);
       }
@@ -145,9 +150,10 @@ class SyncService {
 
       final status = response.statusCode ?? 0;
       if (status >= 200 && status < 300) {
-        // Success: drop the job, mark records synced.
-        await _db.markAttendanceSynced(job.levelId, job.date);
-        await _db.deleteJob(job.id);
+        // Success: drop the job and mark its records synced — unless the class
+        // was re-saved during the upload, in which case the job stays queued
+        // with the newer marks (see AppDatabase.completeJob).
+        await _db.completeJob(job);
         return true;
       }
 
@@ -165,15 +171,11 @@ class SyncService {
 
   Future<void> _recordFailure(SyncQueueData job, String error) async {
     final attempts = job.attemptCount + 1;
-    final parked = attempts >= maxAttempts;
-    await _db.updateJob(
-      job.id,
-      SyncQueueCompanion(
-        status: Value(parked ? 'FAILED' : 'PENDING'),
-        attemptCount: Value(attempts),
-        lastError: Value(error),
-        updatedAt: Value(DateTime.now()),
-      ),
+    await _db.failJob(
+      id: job.id,
+      attemptCount: attempts,
+      parked: attempts >= maxAttempts,
+      error: error,
     );
   }
 }

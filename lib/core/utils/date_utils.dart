@@ -36,7 +36,7 @@ String navDate(DateTime date) {
   return '$wd, ${date.day} $mo';
 }
 
-/// Long human-readable date including the year, e.g. "Thu, 10 Apr 2026" —
+/// Long human-readable date including the year, e.g. "Fri, 10 Apr 2026" —
 /// matches the website's `formatDateLong` used on the attendance screen.
 String formatDateLong(String iso) {
   final date = parseIsoDate(iso);

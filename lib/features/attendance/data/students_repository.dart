@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:dio/dio.dart';
 import 'package:drift/drift.dart';
 
@@ -54,10 +52,13 @@ class StudentsRepository {
     if (status == 401) throw const UnauthorizedException();
     if (status < 200 || status >= 300) {
       final data = response.data;
-
-      final message = data is Map<String, dynamic> ?
-          data['message']?.toString() : 'Failed to load students.';
-      throw ServerException(message!, status);
+      final serverMessage = data is Map ? data['message']?.toString() : null;
+      throw ServerException(
+        serverMessage == null || serverMessage.isEmpty
+            ? 'Failed to load students.'
+            : serverMessage,
+        status,
+      );
     }
 
     final data = response.data;

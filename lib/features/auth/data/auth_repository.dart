@@ -44,15 +44,19 @@ class AuthRepository {
         token: parsed.authToken,
         refreshToken: parsed.refreshToken,
         staffName: parsed.staffName,
-        staffId: parsed.staffId,
+        // The login response no longer carries staffId, so remember the ID
+        // the teacher signed in with (it is the login identity).
+        staffId: parsed.staffId.isNotEmpty ? parsed.staffId : staffId,
         institutionName: parsed.institutionName,
       );
       return parsed.staffName;
     }
 
     if (status == 401) {
+      // The backend reports the reason in `message` ("Invalid ID or password",
+      // or "You are not allowed to access the system! Contact your admin").
       throw UnauthorizedException(
-          _stringOr(body['body'], 'Invalid credentials.'));
+          _stringOr(body['message'] ?? body['body'], 'Invalid credentials.'));
     }
     if (status == 500) {
       throw ServerException(_stringOr(body['message'], 'Server error.'), 500);
